@@ -123,9 +123,9 @@ class SumerianConnector : NSObject, WKScriptMessageHandler {
             return nil;
         }
 
-        let hitTestResults = currentFrame.hitTest(location, types: .existingPlane);
+        let hitTestResults = currentFrame.hitTest(location, types: .existingPlaneUsingExtent);
 
-        guard let firstResult = hitTestResults.last else {
+        guard let firstResult = hitTestResults.first else {
             return nil;
         }
 
