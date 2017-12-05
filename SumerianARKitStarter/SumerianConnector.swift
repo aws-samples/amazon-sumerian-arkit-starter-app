@@ -13,7 +13,7 @@ import Foundation
 import ARKit
 import WebKit
 
-class SumerianConnector : NSObject, WKScriptMessageHandler {
+class SumerianConnector : NSObject, WKScriptMessageHandler, ARSessionDelegate {
 
     private static let hitTestMessageName = "arkit_hit_test"
     private static let registerAnchorMessageName = "arkit_register_anchor"
@@ -40,31 +40,28 @@ class SumerianConnector : NSObject, WKScriptMessageHandler {
         self.webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 
         parentView.addSubview(self.webView)
+        self.arSession.delegate = self
     }
 
     func loadUrl(url: URL) {
         self.webView.load(URLRequest(url: url))
     }
 
-    func update() {
-        guard let currentFrame = arSession.currentFrame else {
-            return
-        }
-
+    func session(_ session: ARSession, didUpdate frame: ARFrame) {
         DispatchQueue.main.async {
             let orientation = UIApplication.shared.statusBarOrientation
 
-            let viewMatrix = currentFrame.camera.viewMatrix(for: orientation)
-            let projectionMatrix = currentFrame.camera.projectionMatrix(for: orientation, viewportSize: self.webView.frame.size, zNear: 0.02, zFar: 20)
+            let viewMatrix = frame.camera.viewMatrix(for: orientation)
+            let projectionMatrix = frame.camera.projectionMatrix(for: orientation, viewportSize: self.webView.frame.size, zNear: 0.02, zFar: 20)
 
             self.webView.evaluateJavaScript("ARKitBridge.viewProjectionMatrixUpdate(\'\(self.serializeMatrix(matrix: viewMatrix))', '\(self.serializeMatrix(matrix: projectionMatrix))');")
 
-            if let lightEstimate = currentFrame.lightEstimate {
+            if let lightEstimate = frame.lightEstimate {
                 self.webView.evaluateJavaScript("ARKitBridge.lightingEstimateUpdate(\(lightEstimate.ambientIntensity), \(lightEstimate.ambientColorTemperature));")
             }
 
-            if (currentFrame.anchors.count > 0) {
-                self.webView.evaluateJavaScript("ARKitBridge.anchorTransformUpdate(\'\(self.serializeAnchorTransforms(anchors: currentFrame.anchors))');")
+            if (frame.anchors.count > 0) {
+                self.webView.evaluateJavaScript("ARKitBridge.anchorTransformUpdate(\'\(self.serializeAnchorTransforms(anchors: frame.anchors))');")
             }
         }
     }

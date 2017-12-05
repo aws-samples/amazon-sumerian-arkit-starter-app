@@ -50,10 +50,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
 
     // ARSCNViewDelegate
-    func renderer(_ renderer: SCNSceneRenderer, didApplyAnimationsAtTime time: TimeInterval) {
-        self.sumerianConnector.update()
-    }
-
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         if !self.createDebugNodes {
             return nil
