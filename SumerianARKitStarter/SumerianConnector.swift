@@ -37,6 +37,7 @@ class SumerianConnector : NSObject, WKScriptMessageHandler, ARSessionDelegate {
         webViewConfiguration.userContentController.add(self, name: SumerianConnector.hitTestMessageName)
         webViewConfiguration.userContentController.add(self, name: SumerianConnector.registerAnchorMessageName)
         webViewConfiguration.mediaTypesRequiringUserActionForPlayback = []
+        webViewConfiguration.allowsInlineMediaPlayback = true
 
         self.webView = FullScreenWKWebView(frame: CGRect(x: 0, y: 0, width: parentView.frame.width, height: parentView.frame.height), configuration: webViewConfiguration)
         self.webView.scrollView.isScrollEnabled = false
