@@ -10,6 +10,7 @@
 //
 
 import UIKit
+import AVFoundation
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -30,6 +31,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
+        AVCaptureDevice.requestAccess(for: AVMediaType.video) { [weak self] (accepted) in
+            if(!accepted) {
+                let alert = UIAlertController(title: "Camera Disabled", message: "AR scenes require access to the camera.", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "Enable Camera", style: .default, handler: { (action: UIAlertAction!) in
+                    UIApplication.shared.open(URL(string: "app-settings:")!, options: [:], completionHandler: nil);
+                }))
+                self?.window?.rootViewController?.present(alert, animated: true)
+            }
+        }
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
