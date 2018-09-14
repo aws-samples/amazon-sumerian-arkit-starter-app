@@ -19,8 +19,14 @@ class SumerianConnector : NSObject, WKScriptMessageHandler, ARSessionDelegate {
     private static let registerAnchorMessageName = "arkit_register_anchor"
 
     private var arSession: ARSession!
-    private var webView: WKWebView!
+    private var webView: FullScreenWKWebView!
     private var viewportSize: CGSize!
+    
+    class FullScreenWKWebView: WKWebView {
+        override var safeAreaInsets: UIEdgeInsets {
+            return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        }
+    }
 
     func setup(withParentView parentView: UIView, _ arSession: ARSession) {
         self.arSession = arSession
@@ -32,7 +38,7 @@ class SumerianConnector : NSObject, WKScriptMessageHandler, ARSessionDelegate {
         webViewConfiguration.userContentController.add(self, name: SumerianConnector.registerAnchorMessageName)
         webViewConfiguration.mediaTypesRequiringUserActionForPlayback = []
 
-        self.webView = WKWebView(frame: CGRect(x: 0, y: 0, width: parentView.frame.width, height: parentView.frame.height), configuration: webViewConfiguration)
+        self.webView = FullScreenWKWebView(frame: CGRect(x: 0, y: 0, width: parentView.frame.width, height: parentView.frame.height), configuration: webViewConfiguration)
         self.webView.scrollView.isScrollEnabled = false
         self.webView.isUserInteractionEnabled = true
         self.webView.isOpaque = false
@@ -139,6 +145,13 @@ class SumerianConnector : NSObject, WKScriptMessageHandler, ARSessionDelegate {
 
         let anchorJSONData = try! JSONSerialization.data(withJSONObject: anchorDictionary)
         return String(data: anchorJSONData, encoding: String.Encoding.utf8)!
+    }
+    
+    func imageAnchorCreated(imageAnchor: ARImageAnchor, imageName: String) {
+        let serializedMatrix = serializeMatrix(matrix: imageAnchor.transform)
+        print(imageName);
+        print(serializedMatrix);
+        self.webView.evaluateJavaScript("ARKitBridge.imageAnchorResponse(\'\(imageName)\', \'\(serializedMatrix)\');")
     }
 
     func serializeMatrix(matrix: matrix_float4x4) -> String {
