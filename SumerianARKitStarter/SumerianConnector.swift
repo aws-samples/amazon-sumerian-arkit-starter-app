@@ -149,8 +149,6 @@ class SumerianConnector : NSObject, WKScriptMessageHandler, ARSessionDelegate {
     
     func imageAnchorCreated(imageAnchor: ARImageAnchor, imageName: String) {
         let serializedMatrix = serializeMatrix(matrix: imageAnchor.transform)
-        print(imageName);
-        print(serializedMatrix);
         self.webView.evaluateJavaScript("ARKitBridge.imageAnchorResponse(\'\(imageName)\', \'\(serializedMatrix)\');")
     }
 
