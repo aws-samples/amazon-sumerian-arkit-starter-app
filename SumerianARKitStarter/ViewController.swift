@@ -22,6 +22,31 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     private var cubeMaterials: [SCNMaterial]!
     private var sumerianConnector: SumerianConnector!
     private var createDebugNodes: Bool = true
+    
+    /// A serial queue for thread safety when modifying the SceneKit node graph.
+    let updateQueue = DispatchQueue(label: Bundle.main.bundleIdentifier! +
+        ".serialSceneKitQueue")
+    
+    /// Convenience accessor for the session owned by ARSCNView.
+    var session: ARSession {
+        return sceneView.session
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // Prevent the screen from being dimmed to avoid interupting the AR experience.
+        UIApplication.shared.isIdleTimerDisabled = true
+        
+        // Setup the image recognition reference images
+        guard let referenceImages = ARReferenceImage.referenceImages(inGroupNamed: "AR Resources", bundle: nil) else {
+            fatalError("Missing expected asset catalog resources.")
+        }
+        
+        let configuration = ARWorldTrackingConfiguration()
+        configuration.detectionImages = referenceImages
+        session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,6 +87,13 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         cubeNode.geometry = cube
 
         return cubeNode
+    }
+    
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        guard let imageAnchor = anchor as? ARImageAnchor else { return }
+        DispatchQueue.main.async {
+            self.sumerianConnector.imageAnchorCreated(imageAnchor: imageAnchor, imageName: imageAnchor.referenceImage.name ?? "");
+        }
     }
 
     func createCubeMaterials() {
