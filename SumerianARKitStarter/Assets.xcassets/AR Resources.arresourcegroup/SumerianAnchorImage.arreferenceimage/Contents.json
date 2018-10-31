@@ -10,7 +10,6 @@
     "author" : "xcode"
   },
   "properties" : {
-    "width" : 7,
-    "unit" : "inches"
+    "width" : 0.17999999999999999
   }
 }

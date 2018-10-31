@@ -26,27 +26,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     /// A serial queue for thread safety when modifying the SceneKit node graph.
     let updateQueue = DispatchQueue(label: Bundle.main.bundleIdentifier! +
         ".serialSceneKitQueue")
-    
-    /// Convenience accessor for the session owned by ARSCNView.
-    var session: ARSession {
-        return sceneView.session
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
-        // Prevent the screen from being dimmed to avoid interupting the AR experience.
-        UIApplication.shared.isIdleTimerDisabled = true
-        
-        // Setup the image recognition reference images
-        guard let referenceImages = ARReferenceImage.referenceImages(inGroupNamed: "AR Resources", bundle: nil) else {
-            fatalError("Missing expected asset catalog resources.")
-        }
-        
-        let configuration = ARWorldTrackingConfiguration()
-        configuration.detectionImages = referenceImages
-        session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
-    }
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,11 +37,29 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.scene = SCNScene()
         sceneView.delegate = self
         sceneView.preferredFramesPerSecond = 60
-
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // Prevent the screen from being dimmed to avoid interuppting the AR experience.
+        UIApplication.shared.isIdleTimerDisabled = true
+        
+        // Start the AR experience
+        configureARSession()
+    }
+    
+    /// Creates a new AR configuration to run on the `session`.
+    func configureARSession() {
+        guard let referenceImages = ARReferenceImage.referenceImages(inGroupNamed: "AR Resources", bundle: nil) else {
+            fatalError("Missing expected asset catalog resources.")
+        }
+        
         let configuration = ARWorldTrackingConfiguration()
+        configuration.detectionImages = referenceImages
         configuration.planeDetection = .horizontal
         configuration.isLightEstimationEnabled = true
-        sceneView.session.run(configuration)
+        sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -73,19 +71,19 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         super.viewWillDisappear(animated)
         sceneView.session.pause()
     }
-
+    
     // ARSCNViewDelegate
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         if !self.createDebugNodes {
             return nil
         }
-
+        
         let cube = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0.0)
         cube.materials = self.cubeMaterials
-
+        
         let cubeNode = SCNNode()
         cubeNode.geometry = cube
-
+        
         return cubeNode
     }
     
