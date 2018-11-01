@@ -23,11 +23,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     private var sumerianConnector: SumerianConnector!
     private var createDebugNodes: Bool = true
     
-    /// A serial queue for thread safety when modifying the SceneKit node graph.
-    let updateQueue = DispatchQueue(label: Bundle.main.bundleIdentifier! +
-        ".serialSceneKitQueue")
-
-
     override func viewDidLoad() {
         super.viewDidLoad()
         self.createCubeMaterials()
