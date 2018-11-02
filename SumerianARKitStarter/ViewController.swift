@@ -22,7 +22,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     private var cubeMaterials: [SCNMaterial]!
     private var sumerianConnector: SumerianConnector!
     private var createDebugNodes: Bool = true
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.createCubeMaterials()
@@ -33,7 +33,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.delegate = self
         sceneView.preferredFramesPerSecond = 60
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
@@ -43,7 +43,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Start the AR experience
         configureARSession()
     }
-    
+
     /// Creates a new AR configuration to run on the `session`.
     func configureARSession() {
         guard let referenceImages = ARReferenceImage.referenceImages(inGroupNamed: "AR Resources", bundle: nil) else {
@@ -66,22 +66,22 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         super.viewWillDisappear(animated)
         sceneView.session.pause()
     }
-    
+
     // ARSCNViewDelegate
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         if !self.createDebugNodes {
             return nil
         }
-        
+
         let cube = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0.0)
         cube.materials = self.cubeMaterials
-        
+
         let cubeNode = SCNNode()
         cubeNode.geometry = cube
-        
+
         return cubeNode
     }
-    
+
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         guard let imageAnchor = anchor as? ARImageAnchor else { return }
         DispatchQueue.main.async {
