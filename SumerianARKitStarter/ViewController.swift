@@ -32,11 +32,29 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.scene = SCNScene()
         sceneView.delegate = self
         sceneView.preferredFramesPerSecond = 60
+    }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // Prevent the screen from being dimmed to avoid interuppting the AR experience.
+        UIApplication.shared.isIdleTimerDisabled = true
+        
+        // Start the AR experience
+        configureARSession()
+    }
+
+    /// Creates a new AR configuration to run on the `session`.
+    func configureARSession() {
+        guard let referenceImages = ARReferenceImage.referenceImages(inGroupNamed: "AR Resources", bundle: nil) else {
+            fatalError("Missing expected asset catalog resources.")
+        }
+        
         let configuration = ARWorldTrackingConfiguration()
+        configuration.detectionImages = referenceImages
         configuration.planeDetection = .horizontal
         configuration.isLightEstimationEnabled = true
-        sceneView.session.run(configuration)
+        sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -62,6 +80,13 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         cubeNode.geometry = cube
 
         return cubeNode
+    }
+
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        guard let imageAnchor = anchor as? ARImageAnchor else { return }
+        DispatchQueue.main.async {
+            self.sumerianConnector.imageAnchorCreated(imageAnchor: imageAnchor, imageName: imageAnchor.referenceImage.name ?? "");
+        }
     }
 
     func createCubeMaterials() {
