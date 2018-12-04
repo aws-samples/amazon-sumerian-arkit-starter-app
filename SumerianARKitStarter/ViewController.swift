@@ -70,7 +70,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     // ARSCNViewDelegate
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         if !self.createDebugNodes {
-            return nil
+            return SCNNode()
         }
 
         let cube = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0.0)
